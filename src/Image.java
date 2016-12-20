@@ -3,7 +3,6 @@ import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.IOException;
-import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 
@@ -11,34 +10,22 @@ import java.nio.file.Paths;
  * Created by gilshe on 12/20/16.
  */
 public class Image extends Component {
+    private static final String JPG = ".jpg";
     private BufferedImage image;
     private String name;
 
-    public Image(String name, boolean newImg) {
-        String filePath = ImageHandler.imagesDir() + name;
-        Path FROM = Paths.get(filePath);
+    public Image(String name, int width, int height){
+        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        this.name = name + JPG;
+    }
 
-        File file = null;
-
-        if(newImg) {
-            Path TO = Paths.get(filePath + "_processed.jpg"); //TODO
-            if(!TO.toFile().exists()) {
-                try {
-                    Path res = Files.copy(FROM, TO);
-                    file = res.toFile();
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-            }
-            else file = TO.toFile();
-        }
-
-        else file = FROM.toFile();
-
-        this.name = file.getName();
-
+    public Image(String iname){
+        iname = ImageHandler.imagesDir() + iname + JPG;
+        Path ipath = Paths.get(iname);
+        File ifile = ipath.toFile(); // assuming file exists
+        this.name = ifile.getName();
         try {
-            image = ImageIO.read(file);
+            image = ImageIO.read(ifile);
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -57,8 +44,8 @@ public class Image extends Component {
     }
 
     public void setColor(Pixel center, double color){
-        int clr = (int) color;
-        image.setRGB(center.getCol(), center.getRow(), clr);
+        Color c = new Color((int) color);
+        image.setRGB(center.getCol(), center.getRow(), c.getRGB());
     }
 
     public void paint(Graphics g) {
@@ -77,7 +64,6 @@ public class Image extends Component {
         Color c = new Color(image.getRGB(p.getCol(), p.getRow()));
         return c.getRGB();
     }
-
 
     public boolean inRange(int row, int col) {
         return  col < image.getWidth() && col >= 0 && row < image.getHeight() && row >= 0;

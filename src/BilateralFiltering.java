@@ -17,56 +17,74 @@ public class BilateralFiltering {
 
 
     public Image filter(Image image) {
-        Image processedImage = new Image(image.getName(), true);
+        System.out.println("pixels: " + image.getHeight() * image.getWidth());
+        int changed = 0;
+        Image filteredImage = new Image(image.getName() + "_processed", image.getWidth(), image.getHeight());
+
         for (int y = 0; y < image.getHeight(); y++) {
             for (int x = 0; x < image.getWidth(); x++) {
                 Pixel center = new Pixel(x, y);
                 double clr = calcColor(center, image);
-                processedImage.setColor(center, clr);
+                if(clr != image.getColor(center))
+                    changed++;
+                filteredImage.setColor(center, clr);
             }
         }
-        return processedImage;
+
+        System.out.println("changed: " + changed);
+        return filteredImage;
     }
 
     private double calcColor(Pixel center, Image image) {
         List<Pixel> omega = getPixelsInWindow(center, image);
-        double normal = calcSum(center, omega, 1, image);
-        double summation = calcSum(center, omega, image.getColor(center), image);
+        double normal = calcSum(image, center, omega, false);
+        double summation = calcSum(image, center, omega, true);
         return summation / normal;
     }
 
-    private double calcSum(Pixel center, List<Pixel> omega, int val, Image image) {
+    private double calcSum(Image image, Pixel center, List<Pixel> omega, boolean withPixel) {
         double sum = 0;
         for(Pixel p: omega){
-            double geometric = geometric(center, p);
-            double intensity = intensity(image, center, p);
-
-            sum += (geometric * intensity * val);
+            double geometricDist = geometric(center, p);
+            double intensityDist = intensity(image, center, p);
+            if(withPixel)
+                sum += (geometricDist * intensityDist * image.getColor(p));
+            else sum += (geometricDist * intensityDist);
         }
         return sum;
     }
 
+    // Intensity distance
     private double intensity(Image image, Pixel center, Pixel p) {
-        double x = -Math.pow(image.getColor(center) - image.getColor(p), 2) / (2 * Math.pow(sigmaR, 2));
-        return Math.exp(x);
+        double val = Math.abs(image.getColor(center) - image.getColor(p)) / sigmaR;
+        val = Math.pow(val, 2);
+        val *= -0.5;
+        val = Math.exp(val);
+        return val;
+
     }
 
+    // Euclidean part
     private double geometric(Pixel center, Pixel p) {
-        double x = -Math.pow(center.distance(p), 2) / (2 * Math.pow(sigmaD, 2));
-        return Math.exp(x);
+        double val = center.distance(p) / sigmaD;
+        val = Math.pow(val, 2);
+        val *= -0.5;
+        val = Math.exp(val);
+        return val;
     }
 
 
     private List<Pixel> getPixelsInWindow(Pixel center, Image image) {
         List<Pixel> pixelsInWindow = new LinkedList<>();
-        int row = center.getRow() - (window / 2);
+        int rowMax = center.getRow() + (window / 2) + 1;
+        int colMax = center.getCol() + (window / 2) + 1;
 
-        for(; row < center.getRow() + (window / 2) + 1; row++) {
-            for (int col = center.getCol() - (window / 2); col < center.getCol() + (window / 2) + 1; col++) {
-                if(image.inRange(row, col))
+        for(int row = center.getRow() - (window / 2); row < rowMax; row++)
+            for (int col = center.getCol() - (window / 2); col < colMax; col++) {
+                if (image.inRange(row, col))
                     pixelsInWindow.add(new Pixel(col, row));
             }
-        }
+
 
 
         return pixelsInWindow;

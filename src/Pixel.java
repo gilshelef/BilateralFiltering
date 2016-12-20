@@ -20,8 +20,8 @@ public class Pixel {
     }
 
     public double distance(Pixel other) {
-        double ycoord = Math.abs (row - other.getRow());
-        double xcoord = Math.abs (col- other.getCol());
+        double ycoord = row - other.getRow();
+        double xcoord = col - other.getCol();
         return Math.sqrt(Math.pow(ycoord, 2) + Math.pow(xcoord, 2));
     }
 
