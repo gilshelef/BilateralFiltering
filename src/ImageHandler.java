@@ -10,7 +10,7 @@ class ImageHandler {
     private static final  String IMAGE_DIR = "images/";
 
 
-    public void display(String title, Image image) {
+    public static void display(String title, Image image) {
         JFrame f = new JFrame(title);
 
         f.addWindowListener(new WindowAdapter(){

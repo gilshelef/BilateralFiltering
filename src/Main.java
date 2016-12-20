@@ -4,16 +4,14 @@
 public class Main {
     public static void main(String[] args){
 
-        String imageName = "kitten-orig.jpg";
-        ImageHandler imageHandler = new ImageHandler();
-
         BilateralFiltering bf = new BilateralFiltering(
                 Double.valueOf(args[0]), Double.valueOf(args[1]), Integer.valueOf(args[2]));
 
+        String imageName = "lena-orig.jpg";
 
-        Image originalImage = new Image(imageName);
-        imageHandler.display(originalImage.getName(), originalImage);
+        Image originalImage = new Image(imageName, false);
+        ImageHandler.display(originalImage.getName(), originalImage);
         Image filteredImage = bf.filter(originalImage);
-        imageHandler.display(filteredImage.getName(), filteredImage);
+        ImageHandler.display(filteredImage.getName(), filteredImage);
     }
 }
