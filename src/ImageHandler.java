@@ -1,6 +1,10 @@
+import javax.imageio.ImageIO;
 import javax.swing.*;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
+import java.awt.image.BufferedImage;
+import java.io.File;
+import java.io.IOException;
 
 /**
  * Created by gilshe on 12/19/16.
@@ -27,6 +31,16 @@ class ImageHandler {
 
     public static String imagesDir() {
         return IMAGE_DIR;
+    }
+
+    public static void write(Image image) {
+        try {
+            BufferedImage bi = image.getBuffer();
+            File outputFile = new File(ImageHandler.imagesDir() + image.getName());
+            ImageIO.write(bi, "jpg", outputFile);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }
 

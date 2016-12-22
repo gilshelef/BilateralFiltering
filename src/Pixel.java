@@ -6,9 +6,9 @@ public class Pixel {
     private int col;
     private int row;
 
-    public Pixel(int x, int y){
-        this.col = x;
-        this.row = y;
+    public Pixel(int width, int height){
+        this.col = width;
+        this.row = height;
     }
 
     public int getCol() {
@@ -20,9 +20,10 @@ public class Pixel {
     }
 
     public double distance(Pixel other) {
-        double ycoord = row - other.getRow();
-        double xcoord = col - other.getCol();
-        return Math.sqrt(Math.pow(ycoord, 2) + Math.pow(xcoord, 2));
+        double height = row - other.getRow();
+        double width = col - other.getCol();
+//        return height*height + width*width;
+        return Math.sqrt(height*height + width*width);
     }
 
     public String toString(){

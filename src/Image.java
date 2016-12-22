@@ -15,15 +15,16 @@ public class Image extends Component {
     private String name;
 
     public Image(String name, int width, int height){
-        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+        image = new BufferedImage(width, height, BufferedImage.TYPE_INT_RGB);
         this.name = name + JPG;
     }
 
     public Image(String iname){
-        iname = ImageHandler.imagesDir() + iname + JPG;
+        iname += JPG;
         Path ipath = Paths.get(iname);
         File ifile = ipath.toFile(); // assuming file exists
         this.name = ifile.getName();
+
         try {
             image = ImageIO.read(ifile);
         } catch (IOException e) {
@@ -43,9 +44,20 @@ public class Image extends Component {
         return image.getWidth();
     }
 
-    public void setColor(Pixel center, double color){
-        Color c = new Color((int) color);
-        image.setRGB(center.getCol(), center.getRow(), c.getRGB());
+    public BufferedImage getBuffer() {
+        return image;
+    }
+
+    public void setColor(Pixel p, int color){
+        image.setRGB(p.getCol(), p.getRow(), color);
+    }
+
+    public Color getColor(Pixel p) {
+        return new Color(image.getRGB(p.getCol(), p.getRow()));
+    }
+
+    public boolean inRange(int row, int col) {
+        return col < image.getWidth() && col >= 0 && row < image.getHeight() && row >= 0;
     }
 
     public void paint(Graphics g) {
@@ -60,12 +72,4 @@ public class Image extends Component {
         }
     }
 
-    public int getColor(Pixel p) {
-        Color c = new Color(image.getRGB(p.getCol(), p.getRow()));
-        return c.getRGB();
-    }
-
-    public boolean inRange(int row, int col) {
-        return  col < image.getWidth() && col >= 0 && row < image.getHeight() && row >= 0;
-    }
 }
