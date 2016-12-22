@@ -5,11 +5,12 @@ import java.awt.*;
  */
 public class BilateralFiltering {
 
-    private final double sigmaR;
-    private final double sigmaD;
+    private enum Channel { RED, GREEN, BLUE }
+    private final int sigmaR;
+    private final int sigmaD;
     private final int window;
 
-    public BilateralFiltering(double sigmaD, double sigmaR, int window) {
+    public BilateralFiltering(int sigmaD, int sigmaR, int window) {
         this.sigmaD = sigmaD;
         this.sigmaR = sigmaR;
         this.window = window;
@@ -17,19 +18,27 @@ public class BilateralFiltering {
 
 
     public Image filter(Image image) {
-        String imageName = image.getName().substring(0, image.getName().indexOf(".")) + "_processed";
+
+        String imageName = image.getName().substring(0, image.getName().indexOf(".")) + "_processed_" + sigmaD + "_" + sigmaR;
         Image filteredImage = new Image(imageName, image.getWidth(), image.getHeight());
-        for (int y = 0; y < image.getHeight(); y++) { // height
-            for (int x = 0; x < image.getWidth(); x++) { // width
+        for (int y = 0; y < image.getHeight(); y++) {
+            for (int x = 0; x < image.getWidth(); x++) {
                 Pixel center = new Pixel(x, y);
-                Color clr = calcColor(center, image);
+
+                int red = calcColor(center, image, Channel.RED);
+                int blue = calcColor(center, image, Channel.BLUE);
+                int green = calcColor(center, image, Channel.GREEN);
+
+                assert (red == blue && blue == green);
+                Color clr = new Color(red, blue, green);
+
                 filteredImage.setColor(center, clr.getRGB());
             }
         }
         return filteredImage;
     }
 
-    private Color calcColor(Pixel center, Image image) {
+    private int calcColor(Pixel center, Image image, Channel channel) {
 
         int rowMax = center.getRow() + (window / 2) + 1;
         int colMax = center.getCol() + (window / 2) + 1;
@@ -42,16 +51,15 @@ public class BilateralFiltering {
 
                 Pixel p = new Pixel(col, row);
                 double imageDist = spaceDistance(center, p);
-                double colorDist = colorDistance(image, center, p);
+                double colorDist = colorDistance(image, center, p, channel);
                 double mul = imageDist * colorDist;
                 normal += mul;
-                sum += (mul * image.getColor(p).getRed());
+                sum += (mul * getChannel(image.getColor(p), channel));
             }
         }
 
-        double rgb = sum / normal;
-        int red = (int) rgb;
-        return new Color(red, red, red);
+        double channelColor = sum / normal;
+        return (int) channelColor;
     }
 
     private double spaceDistance(Pixel center, Pixel p) {
@@ -59,12 +67,26 @@ public class BilateralFiltering {
         return calc(spaceDist, sigmaD);
     }
 
-    private double colorDistance(Image image, Pixel p1, Pixel p2) {
+    private double colorDistance(Image image, Pixel p1, Pixel p2, Channel channel) {
         Color color1 = image.getColor(p1);
         Color color2 = image.getColor(p2);
 
-        double colorDist = color1.getRed() - color2.getRed();
+        double colorDist = getChannel(color1, channel) - getChannel(color2, channel);
         return calc(colorDist, sigmaR);
+    }
+
+    private double getChannel(Color color, Channel channel) {
+        switch (channel){
+            case RED:
+                return color.getRed();
+            case GREEN:
+                return color.getGreen();
+            case BLUE:
+                return color.getBlue();
+            default:
+                throw new RuntimeException("No such color: " + channel.toString());
+        }
+
     }
 
     private double calc(double val, double sigma) {
@@ -73,58 +95,5 @@ public class BilateralFiltering {
         val *= -0.5;
         return Math.exp(val);
     }
-//
-//    private List<Pixel> getPixelsInWindow(Pixel center, Image image) {
-//        List<Pixel> pixelsInWindow = new LinkedList<>();
-//        int rowMax = center.getRow() + (window / 2) + 1;
-//        int colMax = center.getCol() + (window / 2) + 1;
-//
-//        for(int row = center.getRow() - (window / 2); row < rowMax; row++) {
-//            for (int col = center.getCol() - (window / 2); col < colMax; col++) {
-//                if (image.inRange(row, col))
-//                    pixelsInWindow.add(new Pixel(col, row));
-//            }
-//        }
-//        return pixelsInWindow;
-//    }
-
-
-//    private double calcColor(Pixel center, Image image) {
-//        List<Pixel> omega = getPixelsInWindow(center, image);
-//        double normal = calcSum(image, center, omega, false);
-//        double summation = calcSum(image, center, omega, true);
-//        return summation / normal;
-//    }
-//
-//    private double calcSum(Image image, Pixel center, List<Pixel> omega, boolean withPixel) {
-//        double sum = 0;
-//        for(Pixel p: omega){
-//            double geometricDist = geometric(center, p);
-//            double intensityDist = intensity(image, center, p);
-//            if(withPixel)
-//                sum += (geometricDist * intensityDist * image.getColor(p));
-//            else sum += (geometricDist * intensityDist);
-//        }
-//        return sum;
-//    }
-
-    // Intensity distance
-//    private double intensity(Image image, Pixel center, Pixel p) {
-//        double val = Math.abs(image.getColor(center) - image.getColor(p)) / sigmaR;
-//        val = Math.pow(val, 2);
-//        val *= -0.5;
-//        val = Math.exp(val);
-//        return val;
-//
-//    }
-
-//    // Euclidean part
-//    private double geometric(Pixel center, Pixel p) {
-//        double val = center.distance(p) / sigmaD;
-//        val = Math.pow(val, 2);
-//        val *= -0.5;
-//        val = Math.exp(val);
-//        return val;
-//    }
 
 }

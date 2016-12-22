@@ -12,6 +12,7 @@ import java.io.IOException;
 
 class ImageHandler {
     private static final  String IMAGE_DIR = "images/";
+    private static final  String FILTERED_IMAGE_DIR = "filtered-images/";
 
 
     public static void display(String title, Image image) {
@@ -36,7 +37,7 @@ class ImageHandler {
     public static void write(Image image) {
         try {
             BufferedImage bi = image.getBuffer();
-            File outputFile = new File(ImageHandler.imagesDir() + image.getName());
+            File outputFile = new File(FILTERED_IMAGE_DIR + image.getName());
             ImageIO.write(bi, "jpg", outputFile);
         } catch (IOException e) {
             e.printStackTrace();
