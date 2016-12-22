@@ -29,9 +29,8 @@ public class BilateralFiltering {
                 int blue = calcColor(center, image, Channel.BLUE);
                 int green = calcColor(center, image, Channel.GREEN);
 
-                assert (red == blue && blue == green);
-                Color clr = new Color(red, blue, green);
-
+                Color clr = new Color(red, green, blue);
+                Color orig = image.getColor(center);
                 filteredImage.setColor(center, clr.getRGB());
             }
         }
